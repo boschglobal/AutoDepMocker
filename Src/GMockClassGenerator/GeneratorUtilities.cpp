@@ -59,6 +59,11 @@ void GeneratorUtilities::constructIncludes(const std::string& fileName, const st
 // Append #endif at last line of the file
 void GeneratorUtilities::finishMocking() {
     std::string directoryPath = "./GeneratedMocks/";
+    // Check if directory exists
+    if(!(std::filesystem::exists(directoryPath)) || !(std::filesystem::is_directory(directoryPath))) {
+        // No files would have been mocked, nothing to do
+        return;
+    }
     // Iterate over each file in the directory
     for (const auto& entry : std::filesystem::directory_iterator(directoryPath)) {
         const std::string filePath = entry.path().string();
@@ -83,6 +88,12 @@ std::string GeneratorUtilities::convertDashToUnderScore(const std::string &fileN
 
 void GeneratorUtilities::writeToFile(const std::string& fileName, const std::string& content) {
     std::ofstream file(getOutFileName(fileName), std::ios::app);
+    file << content;
+    file.close();
+}
+
+void GeneratorUtilities::writeToFileOverWrite(const std::string& fileName, const std::string& content) {
+    std::ofstream file(getOutFileName(fileName), std::ios::trunc);
     file << content;
     file.close();
 }

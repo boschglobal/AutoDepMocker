@@ -54,34 +54,21 @@ void CustomASTConsumer::HandleTranslationUnit(clang::ASTContext& context) {
 // Get necessary information from CustomASTVisitor and invoke MockGenerator
 void CustomASTConsumer::generateMockFiles() {
 
-    std::unique_ptr<IMockGenerator> mockGenerator = std::make_unique<GMockClassGenerator>();
+    GMockClassGenerator gmockGenerator;
+    IMockGenerator& mockGenerator = gmockGenerator;
 
-    // Write include information first
-    const IncludeInfo& includeInfo = m_customASTvisitor->getIncludeInfo();
-    for(const auto& each : includeInfo) {
-        mockGenerator->constructIncludes(each.first, each.second);
-    }
-
-    // Write Enums
-    const EnumInfo& enumInfo = m_customASTvisitor->getEnumInfo();
-    for(const auto& itr : enumInfo) {
-        mockGenerator->constructEnum(itr.first, itr.second);
-    }
-
-    // Write C++ classes
-    const auto [classInfo, classMethodsInfo] = m_customASTvisitor->getMockclassInfoAndMethods();
-    for(const auto& itr : classInfo) {
-        mockGenerator->constructClass(itr.second, classMethodsInfo.at(itr.first));
-    }
-
-    // Write C functions
-    const CFunctionInfoType& cFunctionsInfo = m_customASTvisitor->getCMockFunctions();
-    for(const auto& each : cFunctionsInfo) {
-        mockGenerator->constructCFunction(each.first, each.second);
+    const auto mockInfoStorage = m_customASTvisitor->getMockInfoStorage();
+    const auto includeInfo = m_customASTvisitor->getIncludeInfo();
+    for(auto& eachEntry : mockInfoStorage) {
+        if(includeInfo.count(eachEntry.first)) {
+            mockGenerator.constructMockClass(eachEntry.first, eachEntry.second, includeInfo.at(eachEntry.first));
+        } else {
+            mockGenerator.constructMockClass(eachEntry.first, eachEntry.second, {}/*NoIncludes*/);
+        }
     }
 
     // Finish mocking
-    mockGenerator->finalizeMocking();
+    mockGenerator.finalizeMocking();
 
     std::cout << "\33[1;35m\nMock files have been generated to GeneratedMocks folder. Feel free to customize the content of these files to suit the specific requirements of your project.\033[0m\n";
     std::cout << "\33[1;35m\nCopyright information is left blank in generated files. Please add it according to your project.\033[0m\n";

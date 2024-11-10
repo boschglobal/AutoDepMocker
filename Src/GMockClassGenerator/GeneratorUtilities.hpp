@@ -27,16 +27,15 @@
 #include <vector>
 
 #include "Defines.hpp"
+#include "MockGeneratorTypes.hpp"
 
 // Basic utilities for generating mock class
-class GeneratorUtilities {
+class GeneratorUtilities : public NonCopyableMovable {
 public:
 
     // Special member functions
     GeneratorUtilities() = default;
     ~GeneratorUtilities() = default;
-    GeneratorUtilities& operator =(const GeneratorUtilities&) = delete;
-    GeneratorUtilities(const GeneratorUtilities&) = delete;
 
     // Wrtie Include information to given file
     // Example: Given: {/usr/include/MyIncludes/include1.hpp, /usr/include/MyIncludes/include2.hpp}
@@ -54,6 +53,8 @@ protected:
     std::string convertDashToUnderScore(const std::string& fileName);
 
     void writeToFile(const std::string& fileName, const std::string& content);
+
+    void writeToFileOverWrite(const std::string& fileName, const std::string& content);
 
     std::string addIncludeGuard(const std::string& guardName);
 
